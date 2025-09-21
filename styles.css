@@ -1,0 +1,33 @@
+:root {
+  --bg:#0f1115; --fg:#e5e7eb; --muted:#9ca3af; --accent:#80e5ff; --panel:#1a1f29;
+  --btn:#222735; --btn2:#2b3345; --stroke:#9ee6ff;
+}
+*{box-sizing:border-box; font-family: system-ui, Segoe UI, Roboto, Arial, sans-serif;}
+html,body{margin:0; background:var(--bg); color:var(--fg);}
+header{display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#12151c; border-bottom:1px solid #202533;}
+h1{margin:0; font-size:18px; font-weight:600;}
+.actions{display:flex; gap:8px; align-items:center;}
+button,.file{background:var(--btn); color:var(--fg); border:1px solid #2a3142; padding:8px 12px; border-radius:10px; cursor:pointer;}
+button:hover,.file:hover{background:var(--btn2);}
+.file input{display:none;}
+
+main{display:grid; grid-template-columns: 360px 1fr; gap:12px; padding:12px; min-height:calc(100vh - 86px);}
+.left{background:var(--panel); border:1px solid #1f2532; border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:10px;}
+.right{display:flex; align-items:center; justify-content:center; background:#0c0e13; border:1px solid #1f2532; border-radius:12px;}
+#view{max-width:100%; max-height:100%; background:#0b0e12; border-radius:12px;}
+
+.group{border:1px solid #2a3142; border-radius:10px; padding:10px; margin-bottom:8px;}
+.group h3{margin:0 0 8px 0; font-size:14px; color:#c7d2fe;}
+.row{display:flex; gap:8px; align-items:center; margin:6px 0;}
+.row label{width:90px; color:var(--muted); font-size:12px;}
+.row input[type="number"], .row input[type="text"], .row select{
+  width:100%; padding:6px 8px; border-radius:8px; border:1px solid #2b3345;
+  background:#121721; color:var(--fg);
+}
+.row input[type="range"]{width:100%;}
+.small{font-size:12px; color:var(--muted);}
+.metrics{display:grid; grid-template-columns: 1fr; gap:4px; font-size:13px; color:#cbd5e1;}
+.term{display:grid; grid-template-columns: 1fr 1fr 1fr auto; gap:6px; align-items:center; margin:6px 0;}
+.term input{width:100%;}
+.term button{padding:4px 8px;}
+hr{border:0; border-top:1px solid #2a3142; margin:8px 0;}

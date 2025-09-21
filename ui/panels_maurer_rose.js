@@ -1,0 +1,69 @@
+// /ui/panels_maurer_rose.js — Maurer Rose UI panel
+
+export function mountMaurerRosePanel(root, store){
+  root.innerHTML = '';
+  const p  = store.getState().params;
+
+  const group = (title) => { const g=document.createElement('div'); g.className='group'; g.innerHTML=`<h3>${title}</h3>`; return g; };
+  const rowNum = (label, val, min, max, step, onChange)=>{
+    const wrap=document.createElement('div'); wrap.className='row';
+    const lab=document.createElement('label'); lab.textContent=label;
+    const inp=document.createElement('input'); inp.type='number';
+    if(min!=null)inp.min=min; if(max!=null)inp.max=max; if(step!=null)inp.step=step;
+    inp.value=val; inp.addEventListener('input',()=>onChange(parseFloat(inp.value)));
+    wrap.append(lab,inp); return wrap;
+  };
+  const rowSelect=(label, val, options, onChange)=>{
+    const wrap=document.createElement('div'); wrap.className='row';
+    const lab=document.createElement('label'); lab.textContent=label;
+    const sel=document.createElement('select');
+    options.forEach(o=>{ const opt=document.createElement('option'); opt.value=o; opt.textContent=o; if(o===val)opt.selected=true; sel.append(opt); });
+    sel.addEventListener('change',()=>onChange(sel.value)); wrap.append(lab,sel); return wrap;
+  };
+  const rowCheck = (label, val, onChange)=>{
+    const wrap=document.createElement('div'); wrap.className='row';
+    const lab=document.createElement('label'); lab.textContent=label;
+    const inp=document.createElement('input'); inp.type='checkbox'; inp.checked=!!val;
+    inp.addEventListener('change',()=>onChange(inp.checked));
+    wrap.append(lab,inp); return wrap;
+  };
+
+  // Construction
+  const g1 = group('Maurer Rose (chords on a Rhodonea)');
+  g1.append(
+    rowNum('A (radius)', p.A ?? 140, 1, 5000, 1, v => store.updatePathParams({ A:v })),
+    rowNum('k (rose freq)', p.k ?? 6, 0.5, 256, 0.5, v => store.updatePathParams({ k:v })),
+    rowNum('phi (rad)',  p.phi ?? 0, -6.283, 6.283, 0.01, v => store.updatePathParams({ phi:v })),
+    rowSelect('variant', p.variant || 'sin', ['cos','sin'], v => store.updatePathParams({ variant:v })),
+  );
+
+  // Sampling
+  const g2 = group('Sampling on the rose');
+  g2.append(
+    rowNum('d (degrees)', p.dDeg ?? 71, 0.1, 359.9, 0.1, v => store.updatePathParams({ dDeg: v })),
+    rowNum('count (points)', p.count ?? 360, 2, 20000, 1, v => store.updatePathParams({ count: Math.max(2, Math.round(v)) })),
+    rowCheck('Close polyline', p.close ?? false, v => store.updatePathParams({ close: v }))
+  );
+
+  // Style & Quality (global)
+  const g3 = group('Style & Quality');
+  const strokeColor = (()=> {
+    const wrap = document.createElement('div'); wrap.className='row';
+    const lab = document.createElement('label'); lab.textContent = 'Stroke';
+    const inp = document.createElement('input'); inp.type='color'; inp.value = store.getState().stroke.color || '#9ee6ff';
+    inp.addEventListener('input', ()=> store.setState({ stroke: { ...store.getState().stroke, color: inp.value }}));
+    wrap.append(lab, inp); return wrap;
+  })();
+  const rowNum2 = (label, key, min,max,step)=>{
+    return rowNum(label, store.getState().quality[key], min,max,step, v=> store.setState({ quality: { ...store.getState().quality, [key]: v }}));
+  };
+  g3.append(
+    strokeColor,
+    rowNum('Width (px)', store.getState().stroke.width || 1.2, 0.1, 6, 0.1, v=> store.setState({ stroke: { ...store.getState().stroke, width: v }})),
+    rowNum2('Max angle (°)', 'maxAngleStepDeg', 0.05, 2.0, 0.05),
+    rowNum2('Max segment (px)', 'maxSegLenPx', 0.5, 6, 0.1),
+  );
+
+  root.append(g1,g2,g3);
+  return { destroy(){} };
+}

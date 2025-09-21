@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Guilloche Lab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header>
+    <h1>Guilloche Lab</h1>
+    <div class="actions">
+      <div class="method-wrap">
+        <span style="margin-right:6px;">Method:</span>
+        <select id="method">
+          <option value="polar_harmonics">Polar Harmonics</option>
+          <option value="trochoid">Trochoid / Spiro</option>
+          <option value="lissajous">Lissajous</option>
+          <option value="harmonograph">Harmonograph</option>
+          <option value="rhodonea">Rhodonea (Rose)</option>
+          <option value="superformula">Superformula</option>
+          <option value="maurer_rose">Maurer Rose</option>
+          <option value="superellipse">Superellipse (Lamé)</option>
+          <option value="fourier">Fourier Epicycles</option>
+          <option value="log_spiral">Logarithmic Spiral</option>
+          <option value="cycloidal_stars">Cycloidal Stars</option>
+          <option value="phyllotaxis">Phyllotaxis</option>
+          <option value="rose_mix">Rose Mix</option>
+          <option value="clothoid">Clothoid (Euler spiral)</option>
+        </select>
+      </div>
+      <button id="btn-svg">Export SVG</button>
+      <button id="btn-png">Export PNG</button>
+      <button id="btn-save">Save JSON</button>
+      <label class="file">Load JSON <input id="input-load" type="file" accept=".json" /></label>
+    </div>
+  </header>
+
+  <main>
+    <section class="left">
+      <div id="panel"></div>
+      <div class="metrics">
+        <div><b>Vertices:</b> <span id="m-verts">—</span></div>
+        <div><b>Length (px):</b> <span id="m-len">—</span></div>
+        <div><b>Closed:</b> <span id="m-closed">—</span></div>
+      </div>
+    </section>
+    <section class="right">
+      <canvas id="view" width="900" height="900"></canvas>
+    </section>
+  </main>
+
+  <footer>
+    <small>Local MVP. No backend. v1.9</small>
+  </footer>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
