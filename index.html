@@ -5,6 +5,16 @@
   <title>Guilloche Lab</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="./styles.css" />
+  <style>
+    /* small helper styles for Photopea actions */
+    .pp-actions { margin-left: 12px; display: inline-flex; gap: 8px; flex-wrap: wrap; }
+    .pp-actions button {
+      padding: 6px 10px; border-radius: 8px; border: 1px solid #2a3250;
+      background:#121826; color:#e6f0ff; cursor:pointer;
+    }
+    .pp-actions button:hover { background:#161e30; }
+    .pp-status { font-size: 12px; color:#93a4c0; margin-left: 10px; }
+  </style>
 </head>
 <body>
   <header>
@@ -33,6 +43,13 @@
       <button id="btn-png">Export PNG</button>
       <button id="btn-save">Save JSON</button>
       <label class="file">Load JSON <input id="input-load" type="file" accept=".json" /></label>
+
+      <!-- NEW: Photopea export buttons -->
+      <div class="pp-actions">
+        <button id="pp-export-png" type="button" title="Send current canvas as PNG to Photopea">Export PNG to Photopea</button>
+        <button id="pp-export-svg" type="button" title="Send current SVG to Photopea">Export SVG to Photopea</button>
+        <span id="pp-status" class="pp-status"></span>
+      </div>
     </div>
   </header>
 
@@ -55,5 +72,104 @@
   </footer>
 
   <script type="module" src="./app.js"></script>
+
+  <!-- Bridge for Photopea / Vectorpea -->
+  <script>
+    (function(){
+      // === Configuration ===
+      const ALLOWED_PP = new Set(["https://www.photopea.com", "https://www.vectorpea.com"]);
+      const PLUGIN_ORIGIN = (function(){
+        // This page is the "generator" side; it was opened from plugin-iframe.
+        // We expect ?session=...&returnOrigin=https%3A%2F%2F<your-plugin-origin>
+        const url = new URL(location.href);
+        const ro = url.searchParams.get("returnOrigin");
+        try {
+          if (!ro) return null;
+          const u = new URL(ro);
+          const origin = u.origin;
+          // We don't whitelist ro here because plugin origin is *your* site (e.g., github pages of the plugin)
+          return origin;
+        } catch { return null; }
+      })();
+
+      const session = new URLSearchParams(location.search).get("session");
+      const hasOpener = !!window.opener;
+
+      const $status = document.getElementById('pp-status');
+      function setStatus(msg){ if ($status) $status.textContent = msg; }
+      function ok(msg){ setStatus(msg); }
+      function warn(msg){ setStatus(msg); }
+      function err(msg){ setStatus(msg); }
+
+      // Guard: show quick hint when not launched from the plugin
+      if (!hasOpener || !PLUGIN_ORIGIN || !session) {
+        // Do not alert; just a quiet hint for devs
+        warn("Tip: open from the Photopea plugin to enable direct export.");
+      }
+
+      // Helper: send primitive message to plugin with strict targetOrigin = PLUGIN_ORIGIN
+      function sendToPlugin(payload){
+        if (!hasOpener || !PLUGIN_ORIGIN || !session) {
+          alert("Open this generator from the Photopea plugin to enable export.");
+          return false;
+        }
+        payload.session = session;
+        window.opener.postMessage(payload, PLUGIN_ORIGIN);
+        return true;
+      }
+
+      // === PNG export ===
+      document.getElementById('pp-export-png')?.addEventListener('click', () => {
+        try {
+          const canvas = document.getElementById('view');
+          if (!(canvas && canvas.toDataURL)) {
+            alert("Canvas #view not found.");
+            return;
+          }
+          const dataURL = canvas.toDataURL("image/png");
+          if (sendToPlugin({ type: "pp-import-dataurl", dataURL, format: "png" })) {
+            ok("PNG sent to Photopea.");
+          }
+        } catch (e) {
+          console.error(e);
+          err("PNG export failed.");
+        }
+      });
+
+      // === SVG export ===
+      document.getElementById('pp-export-svg')?.addEventListener('click', () => {
+        try {
+          // Preferred: use a global hook if app.js exposes it
+          if (typeof window.getCurrentSVGString === "function") {
+            const svg = window.getCurrentSVGString();
+            const dataURL = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+            if (sendToPlugin({ type: "pp-import-dataurl", dataURL, format: "svg" })) {
+              ok("SVG sent to Photopea.");
+            }
+            return;
+          }
+          // Fallback: if you render to a live <svg id="out-svg"> (not typical here)
+          const svgEl = document.getElementById('out-svg');
+          if (svgEl) {
+            const s = new XMLSerializer().serializeToString(svgEl);
+            const dataURL = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(s);
+            if (sendToPlugin({ type: "pp-import-dataurl", dataURL, format: "svg" })) {
+              ok("SVG sent to Photopea.");
+            }
+            return;
+          }
+          // If no hook available:
+          alert("Provide window.getCurrentSVGString() in app.js to export true vector SVG to Photopea.");
+        } catch (e) {
+          console.error(e);
+          err("SVG export failed.");
+        }
+      });
+
+      // OPTIONAL: if you later decide to enforce that this page is really used from Photopea,
+      // you can also verify document.referrer against ALLOWED_PP. Not strictly required here
+      // because export goes back to the plugin origin, not directly to Photopea.
+    })();
+  </script>
 </body>
 </html>
