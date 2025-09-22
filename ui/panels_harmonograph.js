@@ -140,7 +140,7 @@ export function mountHarmonographPanel(root, store){
   };
   qGroup.append(
     strokeColor,
-    rowNum('Width (px)', store.getState().stroke.width || 1.2, 0.1, 6, 0.1, v=> store.setState({ stroke: { ...store.getState().stroke, width: v }})),
+    rowNum('Width (px)', store.getState().stroke.width || 0.5, 0.1, 6, 0.1, v=> store.setState({ stroke: { ...store.getState().stroke, width: v }})),
     rowNum2('Max angle (°)', 'maxAngleStepDeg', 0.05, 2.0, 0.05),
     rowNum2('Max segment (px)', 'maxSegLenPx', 0.5, 6, 0.1),
   );
@@ -153,3 +153,4 @@ export function mountHarmonographPanel(root, store){
   root.append(xGroup, yGroup, tGroup, qGroup);
   return { destroy(){ unsubscribe(); } };
 }
+
