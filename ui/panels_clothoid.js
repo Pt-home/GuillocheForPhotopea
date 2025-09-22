@@ -77,7 +77,7 @@ export function mountClothoidPanel(root, store){
     const w=document.createElement('div'); w.className='row';
     const lab=document.createElement('label'); lab.textContent='Width (px)';
     const inp=document.createElement('input'); inp.type='number'; inp.min='0.1'; inp.max='6'; inp.step='0.1';
-    inp.value = store.getState().stroke.width || 1.2;
+    inp.value = store.getState().stroke.width || 0.5;
     inp.addEventListener('input', ()=> store.setState({ stroke: { ...store.getState().stroke, width: parseFloat(inp.value) }}));
     w.append(lab,inp); return w;
   })();
@@ -90,3 +90,4 @@ export function mountClothoidPanel(root, store){
   root.append(g1, g2, g3);
   return { destroy(){} };
 }
+
