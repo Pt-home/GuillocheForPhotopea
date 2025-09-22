@@ -113,7 +113,7 @@ export function mountPolarPanel(root, store){
     inp.addEventListener('input', ()=> store.setState({ stroke: { ...store.getState().stroke, color: inp.value }}));
     wrap.append(lab, inp); return wrap;
   })();
-  const strokeWidth = rowNum('Width (px)', store.getState().stroke.width || 1.2, 0.1, 6, 0.1, v=> store.setState({ stroke: { ...store.getState().stroke, width: v }}));
+  const strokeWidth = rowNum('Width (px)', store.getState().stroke.width || 0.5, 0.1, 6, 0.1, v=> store.setState({ stroke: { ...store.getState().stroke, width: v }}));
   const maxAng = rowNum('Max angle (°)', store.getState().quality.maxAngleStepDeg, 0.05, 2.0, 0.05, v => store.setState({ quality: { ...store.getState().quality, maxAngleStepDeg: v }}));
   const maxSeg = rowNum('Max segment (px)', store.getState().quality.maxSegLenPx, 0.5, 6, 0.1, v => store.setState({ quality: { ...store.getState().quality, maxSegLenPx: v }}));
   gStyle.append(strokeColor, strokeWidth, maxAng, maxSeg);
@@ -123,3 +123,4 @@ export function mountPolarPanel(root, store){
   // provide teardown to unsubscribe on method switch
   return { destroy(){ unsubscribe(); } };
 }
+
