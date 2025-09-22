@@ -140,7 +140,7 @@ export function mountFourierPanel(root, store){
     (()=>{ const w=document.createElement('div'); w.className='row';
       const lab=document.createElement('label'); lab.textContent='Width (px)';
       const inp=document.createElement('input'); inp.type='number'; inp.min='0.1'; inp.max='6'; inp.step='0.1';
-      inp.value = store.getState().stroke.width || 1.2;
+      inp.value = store.getState().stroke.width || 0.5;
       inp.addEventListener('input', ()=> store.setState({ stroke: { ...store.getState().stroke, width: parseFloat(inp.value) }}));
       w.append(lab,inp); return w; })(),
     mkRowNum('Max angle (°)', 'maxAngleStepDeg', 0.05, 2.0, 0.05, 0.35),
@@ -158,3 +158,4 @@ export function mountFourierPanel(root, store){
   root.append(gx, gy, gC, gSQ);
   return { destroy(){ unsub(); } };
 }
+
