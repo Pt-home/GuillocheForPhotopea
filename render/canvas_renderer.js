@@ -1,37 +1,52 @@
-export function renderPathData(ctx, canvas, pathData, bbox, stroke, view){
-  const { padding=24, bg='#000' } = view;
-  const { polylines, closed } = pathData;
+// /render/canvas_renderer.js
+// Рендер polyline-путі на <canvas>. Якщо view.bg заданий (не null/'transparent'),
+// заповнює фон; інакше лишає повністю прозорий фон.
 
-  // fit to canvas with padding
-  const w = canvas.width, h = canvas.height;
-  ctx.save();
-  ctx.fillStyle = bg;
-  ctx.fillRect(0,0,w,h);
+export function renderPathData(ctx, canvas, pathData, bbox, stroke, view) {
+  const W = canvas.width, H = canvas.height;
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.clearRect(0,0,W,H);
 
-  const bx = bbox.xmin, by = bbox.ymin, bw = bbox.xmax - bbox.xmin, bh = bbox.ymax - bbox.ymin;
-  const sx = (w - 2*padding) / (bw || 1);
-  const sy = (h - 2*padding) / (bh || 1);
+  // Фон тільки якщо явно заданий колір і він не 'transparent'
+  const bg = view?.bg;
+  if (bg != null && bg !== 'transparent') {
+    ctx.fillStyle = bg;
+    ctx.fillRect(0,0,W,H);
+  }
+
+  // Вираховуємо масштаб і зсув
+  const pad = view?.padding ?? 0;
+  const vbw = Math.max(1e-9, (bbox.xmax - bbox.xmin));
+  const vbh = Math.max(1e-9, (bbox.ymax - bbox.ymin));
+  const sx = (W - 2*pad) / vbw;
+  const sy = (H - 2*pad) / vbh;
   const s = Math.min(sx, sy);
-  const ox = (w - s*bw)/2 - s*bx;
-  const oy = (h - s*bh)/2 - s*by;
 
-  ctx.translate(ox, oy);
-  ctx.scale(s, s);
+  const cx = (bbox.xmin + bbox.xmax) * 0.5;
+  const cy = (bbox.ymin + bbox.ymax) * 0.5;
+  const tx = W * 0.5 - s * cx;
+  const ty = H * 0.5 - s * cy;
 
-  ctx.lineCap = 'round';
+  ctx.setTransform(s, 0, 0, s, tx, ty);
+
+  // Стиль лінії
+  ctx.lineWidth = stroke?.width ?? 1.2;
+  ctx.strokeStyle = stroke?.color ?? '#9ee6ff';
+  ctx.globalAlpha = stroke?.opacity ?? 1.0;
   ctx.lineJoin = 'round';
-  ctx.strokeStyle = stroke.color;
-  ctx.globalAlpha = stroke.opacity ?? 1;
-  ctx.lineWidth = (stroke.width || 1) / s; // constant visual width
+  ctx.lineCap  = 'round';
 
-  for (const poly of polylines){
-    if (poly.length < 2) continue;
+  // Малюємо всі полілінії
+  const lines = pathData?.polylines ?? [];
+  for (const poly of lines) {
+    if (!poly || poly.length < 2) continue;
     ctx.beginPath();
     ctx.moveTo(poly[0][0], poly[0][1]);
     for (let i=1;i<poly.length;i++) ctx.lineTo(poly[i][0], poly[i][1]);
-    if (closed) ctx.closePath();
     ctx.stroke();
   }
 
-  ctx.restore();
+  // Повертаємо трансформацію
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.globalAlpha = 1;
 }
