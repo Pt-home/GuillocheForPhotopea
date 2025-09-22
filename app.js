@@ -179,8 +179,27 @@ document.getElementById('btn-svg')?.addEventListener('click', () => {
 
 document.getElementById('btn-png')?.addEventListener('click', async () => {
   const st = store.getState();
-  await writePNG(canvas, 1, 'guilloche.png', st.view.bg);
+  
+  const { pathData, bbox } = computePath();
+ 
+  const off = document.createElement('canvas');
+  off.width = st.view.size ?? 900;
+  off.height = st.view.size ?? 900;
+  const offCtx = off.getContext('2d');
+  
+  const viewForExport = { ...st.view, bg: null };
+  renderPathData(offCtx, off, pathData, bbox, st.stroke, viewForExport);
+
+  off.toBlob((blob) => {
+    if (!blob) { alert('PNG export failed'); return; }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'guilloche.png';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }, 'image/png');
 });
+
 
 document.getElementById('btn-save')?.addEventListener('click', () => {
   const st = store.getState();
@@ -213,3 +232,4 @@ document.getElementById('input-load')?.addEventListener('change', async (e) => {
     e.target.value = '';
   }
 });
+
