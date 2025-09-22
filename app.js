@@ -179,14 +179,13 @@ document.getElementById('btn-svg')?.addEventListener('click', () => {
 
 document.getElementById('btn-png')?.addEventListener('click', async () => {
   const st = store.getState();
-  
   const { pathData, bbox } = computePath();
- 
+
   const off = document.createElement('canvas');
   off.width = st.view.size ?? 900;
   off.height = st.view.size ?? 900;
   const offCtx = off.getContext('2d');
-  
+
   const viewForExport = { ...st.view, bg: null };
   renderPathData(offCtx, off, pathData, bbox, st.stroke, viewForExport);
 
@@ -232,4 +231,5 @@ document.getElementById('input-load')?.addEventListener('change', async (e) => {
     e.target.value = '';
   }
 });
+
 
