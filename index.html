@@ -107,18 +107,12 @@
       // === PNG export (TRANSPARENT) ===
       document.getElementById('pp-export-png')?.addEventListener('click', () => {
         try {
-          if (typeof window.getTransparentPNGDataURL === "function") {
-            const dataURL = window.getTransparentPNGDataURL(); // offscreen transparent render
-            if (!dataURL) { alert("PNG export failed."); return; }
-            if (sendToPlugin({ type: "pp-import-dataurl", dataURL, format: "png" })) {
-              setStatus("PNG sent to Photopea.");
-            }
+          if (typeof window.getTransparentPNGDataURL !== "function") {
+            alert("Transparent export is not ready. Please update app.js (adds window.getTransparentPNGDataURL).");
             return;
           }
-          // Fallback (not recommended): snapshot current canvas (may have solid bg)
-          const canvas = document.getElementById('view');
-          if (!(canvas && canvas.toDataURL)) { alert("Canvas #view not found."); return; }
-          const dataURL = canvas.toDataURL("image/png");
+          const dataURL = window.getTransparentPNGDataURL(); // offscreen + transparent
+          if (!dataURL) { alert("PNG export failed."); return; }
           if (sendToPlugin({ type: "pp-import-dataurl", dataURL, format: "png" })) {
             setStatus("PNG sent to Photopea.");
           }
@@ -149,3 +143,4 @@
   </script>
 </body>
 </html>
+
