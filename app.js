@@ -52,7 +52,7 @@ const panelRoot = document.getElementById('panel');
 // Store
 const store = createStore({
   method: 'polar_harmonics',
-  stroke: { color: '#9ee6ff', width: 1.2, opacity: 1.0 },
+  stroke: { color: '#9ee6ff', width: 0.5, opacity: 1.0 },
   view: { size: 900, padding: 24, bg: '#0b0e12' }, // preview bg only
   quality: { maxAngleStepDeg: 0.35, maxSegLenPx: 2.0, maxVerts: 120000 },
   params: PRESET_CLASSIC,
@@ -248,3 +248,4 @@ window.getCurrentSVGString = () => {
     return '<svg xmlns="http://www.w3.org/2000/svg"/>';
   }
 };
+
