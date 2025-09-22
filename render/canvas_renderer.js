@@ -1,20 +1,14 @@
-// /render/canvas_renderer.js
-// Рендер polyline-путі на <canvas>. Якщо view.bg заданий (не null/'transparent'),
-// заповнює фон; інакше лишає повністю прозорий фон.
-
 export function renderPathData(ctx, canvas, pathData, bbox, stroke, view) {
   const W = canvas.width, H = canvas.height;
   ctx.setTransform(1,0,0,1,0,0);
   ctx.clearRect(0,0,W,H);
 
-  // Фон тільки якщо явно заданий колір і він не 'transparent'
   const bg = view?.bg;
   if (bg != null && bg !== 'transparent') {
     ctx.fillStyle = bg;
     ctx.fillRect(0,0,W,H);
   }
 
-  // Вираховуємо масштаб і зсув
   const pad = view?.padding ?? 0;
   const vbw = Math.max(1e-9, (bbox.xmax - bbox.xmin));
   const vbh = Math.max(1e-9, (bbox.ymax - bbox.ymin));
@@ -29,14 +23,12 @@ export function renderPathData(ctx, canvas, pathData, bbox, stroke, view) {
 
   ctx.setTransform(s, 0, 0, s, tx, ty);
 
-  // Стиль лінії
   ctx.lineWidth = stroke?.width ?? 1.2;
   ctx.strokeStyle = stroke?.color ?? '#9ee6ff';
   ctx.globalAlpha = stroke?.opacity ?? 1.0;
   ctx.lineJoin = 'round';
   ctx.lineCap  = 'round';
 
-  // Малюємо всі полілінії
   const lines = pathData?.polylines ?? [];
   for (const poly of lines) {
     if (!poly || poly.length < 2) continue;
@@ -46,7 +38,7 @@ export function renderPathData(ctx, canvas, pathData, bbox, stroke, view) {
     ctx.stroke();
   }
 
-  // Повертаємо трансформацію
   ctx.setTransform(1,0,0,1,0,0);
   ctx.globalAlpha = 1;
 }
+
