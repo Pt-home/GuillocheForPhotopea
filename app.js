@@ -1,4 +1,4 @@
-// app.js — includes Clothoid (Euler spiral)
+// app.js — v2.1 
 
 import { createStore } from './state/store.js';
 import {
@@ -53,7 +53,7 @@ const panelRoot = document.getElementById('panel');
 const store = createStore({
   method: 'polar_harmonics',
   stroke: { color: '#9ee6ff', width: 1.2, opacity: 1.0 },
-  view: { size: 900, padding: 24, bg: '#0b0e12' },
+  view: { size: 900, padding: 24, bg: '#0b0e12' }, // preview bg only
   quality: { maxAngleStepDeg: 0.35, maxSegLenPx: 2.0, maxVerts: 120000 },
   params: PRESET_CLASSIC,
 });
@@ -165,12 +165,12 @@ if (methodSel) {
 mountPanel();
 redraw();
 
-// --- Export buttons ---
+// --- Export buttons (local files) ---
 document.getElementById('btn-svg')?.addEventListener('click', () => {
   const st = store.getState();
   const { pathData, bbox } = computePath();
   const svg = writeSVG(pathData, bbox, st.view, st.stroke, {
-    method: st.method, params: st.params, quality: st.quality, stroke: st.stroke, version: '1.9'
+    method: st.method, params: st.params, quality: st.quality, stroke: st.stroke, version: '2.1'
   });
   const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
   const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'guilloche.svg' });
@@ -178,28 +178,15 @@ document.getElementById('btn-svg')?.addEventListener('click', () => {
 });
 
 document.getElementById('btn-png')?.addEventListener('click', async () => {
-  const st = store.getState();
-  const { pathData, bbox } = computePath();
-
-  const off = document.createElement('canvas');
-  off.width = st.view.size ?? 900;
-  off.height = st.view.size ?? 900;
-  const offCtx = off.getContext('2d');
-
-  const viewForExport = { ...st.view, bg: null };
-  renderPathData(offCtx, off, pathData, bbox, st.stroke, viewForExport);
-
-  off.toBlob((blob) => {
-    if (!blob) { alert('PNG export failed'); return; }
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'guilloche.png';
-    a.click();
-    URL.revokeObjectURL(a.href);
-  }, 'image/png');
+  const dataURL = window.getTransparentPNGDataURL();
+  if (!dataURL) { alert('PNG export failed'); return; }
+  const a = document.createElement('a');
+  a.href = dataURL;
+  a.download = 'guilloche.png';
+  a.click();
 });
 
-
+// --- Save/Load JSON ---
 document.getElementById('btn-save')?.addEventListener('click', () => {
   const st = store.getState();
   const cfg = { method: st.method, params: st.params, stroke: st.stroke, quality: st.quality };
@@ -208,7 +195,6 @@ document.getElementById('btn-save')?.addEventListener('click', () => {
   a.click(); URL.revokeObjectURL(a.href);
 });
 
-// --- Load JSON (preserve params) ---
 document.getElementById('input-load')?.addEventListener('change', async (e) => {
   const file = e.target.files?.[0];
   if (!file) return;
@@ -232,4 +218,33 @@ document.getElementById('input-load')?.addEventListener('change', async (e) => {
   }
 });
 
+// === Global hooks for Photopea bridge ===
+window.getTransparentPNGDataURL = () => {
+  try {
+    const st = store.getState();
+    const { pathData, bbox } = computePath();
+    const off = document.createElement('canvas');
+    off.width = st.view.size ?? 900;
+    off.height = st.view.size ?? 900;
+    const offCtx = off.getContext('2d');
+    const viewForExport = { ...st.view, bg: null }; // transparent!
+    renderPathData(offCtx, off, pathData, bbox, st.stroke, viewForExport);
+    return off.toDataURL('image/png');
+  } catch (e) {
+    console.error('getTransparentPNGDataURL failed', e);
+    return null;
+  }
+};
 
+window.getCurrentSVGString = () => {
+  try {
+    const st = store.getState();
+    const { pathData, bbox } = computePath();
+    return writeSVG(pathData, bbox, st.view, st.stroke, {
+      method: st.method, params: st.params, quality: st.quality, stroke: st.stroke, version: '2.1'
+    });
+  } catch (e) {
+    console.error('getCurrentSVGString failed', e);
+    return '<svg xmlns="http://www.w3.org/2000/svg"/>';
+  }
+};
